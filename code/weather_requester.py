@@ -45,6 +45,6 @@ class WeatherRequester:
             time.sleep(30)
 
 if __name__ == "__main__":
-    location = os.getenv("LOCATION", "Los Angeles")  # Default to Los Angeles if not set
+    location = os.getenv("LOCATION", "Warsaw")  # Default to Warsaw if not set
     requester = WeatherRequester(location)
     requester.start_polling()
