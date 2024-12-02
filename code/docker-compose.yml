@@ -1,0 +1,6 @@
+version: "3.8"
+services:
+  weather_requester:
+    build: .
+    environment:
+      - LOCATION=Warsaw
