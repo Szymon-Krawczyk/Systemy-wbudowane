@@ -1,5 +1,9 @@
+version: "3"
 services:
   weather_requester:
     build: .
-    environment: 
-      - LOCATION=Warsaw
+    env_file:
+      - .env  # Wczytuje zmienne środowiskowe z pliku .env
+    container_name: weather_requester-1
+    command: python weather_requester.py
+    restart: always

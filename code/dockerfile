@@ -1,17 +1,18 @@
-# Base image
-FROM python:3.9-slim
+# Użycie obrazu Python
+FROM python:3.10-slim
 
-# Set working directory
+# Ustawienie katalogu roboczego
 WORKDIR /app
 
-# Copy the Python script to the container
-COPY weather_requester.py .
+# Kopiowanie plików do obrazu
+COPY weather_requester.py /app/
+COPY requirements.txt /app/
 
-# Install dependencies
-RUN pip install requests
+# Instalacja zależności
+RUN pip install -r requirements.txt
 
-# Set environment variable (can be overridden in docker-compose.yml)
-ENV LOCATION=Warsaw
+# Ustawienie zmiennej środowiskowej domyślnie
+ENV location="10776"
 
-# Run the script
+# Uruchamianie skryptu
 CMD ["python", "weather_requester.py"]
