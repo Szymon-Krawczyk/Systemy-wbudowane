@@ -2,8 +2,34 @@ version: "3"
 services:
   weather_requester:
     build: .
-    env_file:
-      - .env  # Wczytuje zmienne środowiskowe z pliku .env
-    container_name: weather_requester-1
-    command: python weather_requester.py
-    restart: always
+    environment:
+      - API_KEY=${API_KEY}
+      - LOCATION=${LOCATION}
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MQTT_TOPIC=${MQTT_TOPIC}
+    depends_on:
+      - mqtt_broker
+
+  mqtt_subscriber:
+    build: .
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_USER=${MQTT_USER}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MQTT_SUBSCRIBE_TOPIC=${MQTT_SUBSCRIBE_TOPIC}
+      - DATA_DIR=/data
+    volumes:
+      - ./data:/data
+    depends_on:
+      - mqtt_broker
+
+  mqtt_broker:
+    image: eclipse-mosquitto
+    ports:
+      - 1883:1883
+    volumes:
+      - "D:/1. Studia/Systemy wbudowane/Systemy-wbudowane/code/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf"
