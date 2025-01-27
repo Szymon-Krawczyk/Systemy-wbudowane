@@ -4,12 +4,11 @@ import requests
 import json
 import time
 import logging
+import paho.mqtt.client as mqtt
 from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
 
 if os.path.exists(".env"):
     print("Plik .env istnieje i zostanie załadowany.")
@@ -19,6 +18,35 @@ print("API_KEY:", os.getenv("API_KEY"))
 print("LOCATION:", os.getenv("LOCATION"))
 
 logging.basicConfig(level=logging.DEBUG)
+print("MQTT module:", mqtt)
+
+class MQTTPublisher:
+    def __init__(self, location):
+        self.broker = os.getenv("MQTT_BROKER")
+        self.port = int(os.getenv("MQTT_PORT", 1883))
+        self.username = os.getenv("MQTT_USER")
+        self.password = os.getenv("MQTT_PASSWORD")
+        self.topic = f"weather/{location}"  # Dynamiczny temat z lokalizacją
+        self.client = mqtt.Client()
+
+        if self.username and self.password:
+            self.client.username_pw_set(self.username, self.password)
+
+        logging.debug(f"Connecting to MQTT broker {self.broker}:{self.port}")
+        try:
+            self.client.connect(self.broker, self.port, 60)
+            logging.debug("Successfully connected to MQTT broker.")
+        except Exception as e:
+            logging.error(f"Error connecting to MQTT broker: {e}")
+
+    def publish_weather_data(self, data):
+        try:
+            payload = json.dumps(data, indent=2)  # Sformatowane dane
+            logging.debug(f"Publishing to MQTT: {self.topic} - {payload}")
+            self.client.publish(self.topic, payload)
+        except Exception as e:
+            logging.error(f"Error publishing to MQTT: {e}")
+
 
 class WeatherRequester:
     def __init__(self, location: str):
@@ -82,13 +110,12 @@ class WeatherRequester:
         print(data_to_send)
         logging.debug(f"Formatted data: {data_to_send}")
     def run(self):
-        """
-        Uruchamia cykliczne zapytania co 30 sekund.
-        """
         logging.debug("Starting cyclic requests...")
+        mqtt_publisher = MQTTPublisher(self.location)  # Zainicjalizowanie klasy publikatora MQTT
         while True:
             weather_data = self.fetch_weather_data()
             self.format_and_print(weather_data)
+            mqtt_publisher.publish_weather_data(weather_data)  # Publikowanie danych
             time.sleep(30)
 
 
